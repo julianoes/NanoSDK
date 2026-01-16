@@ -266,9 +266,9 @@ elseif (CMAKE_SYSTEM_NAME MATCHES "Windows")
     add_definitions(-D_CRT_RAND_S)
     set(NNG_PLATFORM_WINDOWS ON)
 
-    # Target Windows Vista and later
-    add_definitions(-D_WIN32_WINNT=0x0600)
-    list(APPEND CMAKE_REQUIRED_DEFINITIONS -D_WIN32_WINNT=0x0600)
+    # Target Windows 10 and later (required for msquic BCRYPT_SHA*_ALG_HANDLE pseudo-handles)
+    add_definitions(-D_WIN32_WINNT=0x0A00)
+    list(APPEND CMAKE_REQUIRED_DEFINITIONS -D_WIN32_WINNT=0x0A00)
 
 elseif (CMAKE_SYSTEM_NAME MATCHES "QNX")
     add_definitions(-DNNG_PLATFORM_POSIX)
