@@ -28,9 +28,12 @@ if (NNG_ENABLE_QUIC)
         nng_link_libraries(ws2_32)
     endif()
 
-    nng_link_libraries("${CMAKE_BINARY_DIR}/_deps/opensslquic-build/openssl/lib/libssl.a")
-    nng_link_libraries("${CMAKE_BINARY_DIR}/_deps/opensslquic-build/openssl/lib/libcrypto.a")
-    nng_include_directories(${CMAKE_BINARY_DIR}/_deps/opensslquic-build/openssl/include)
+    # Only link OpenSSL if using OpenSSL as TLS backend (not Schannel on Windows)
+    if(NOT QUIC_TLS STREQUAL "schannel")
+        nng_link_libraries("${CMAKE_BINARY_DIR}/_deps/opensslquic-build/openssl/lib/libssl.a")
+        nng_link_libraries("${CMAKE_BINARY_DIR}/_deps/opensslquic-build/openssl/lib/libcrypto.a")
+        nng_include_directories(${CMAKE_BINARY_DIR}/_deps/opensslquic-build/openssl/include)
+    endif()
 
     nng_include_directories(${INTERNAL_MSQUIC_INCLUDE_DIR})
     
