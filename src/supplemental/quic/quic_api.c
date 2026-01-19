@@ -803,10 +803,10 @@ quic_connect_ipv4(const char *url, nni_sock *sock, uint32_t *index, void **qsock
 		goto error;
 	}
 
-	// TODO: Windows compatible
 	QUIC_ADDR Address = { 0 };
-	// Address.Ip.sa_family = QUIC_ADDRESS_FAMILY_UNSPEC;
-	Address.Ip.sa_family = QUIC_ADDRESS_FAMILY_INET;
+	// Use Ipv4.sin_family for cross-platform compatibility
+	// (Windows SOCKADDR_INET doesn't have an 'Ip' member like Unix does)
+	Address.Ipv4.sin_family = QUIC_ADDRESS_FAMILY_INET;
 	Address.Ipv4.sin_port = htons(0);
 	// QuicAddrSetFamily(&Address, QUIC_ADDRESS_FAMILY_UNSPEC);
 	// QuicAddrSetPort(&Address, 0);
