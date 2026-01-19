@@ -15,8 +15,10 @@
 #include "nng/mqtt/mqtt_client.h"
 #include "supplemental/mqtt/mqtt_msg.h"
 
+#ifndef _WIN32
 #include "openssl/pem.h"
 #include "openssl/x509.h"
+#endif
 
 #include <assert.h>
 #include <errno.h>
@@ -25,7 +27,9 @@
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
+#ifndef _WIN32
 #include <unistd.h>
+#endif
 
 #define NNI_QUIC_KEEPALIVE 100
 #define NNI_QUIC_TIMER 1
@@ -150,6 +154,8 @@ static void quic_sock_fini(quic_sock_t *qsock);
 static void quic_strm_init(quic_strm_t *qstrm, quic_sock_t *qsock);
 static void quic_strm_fini(quic_strm_t *qstrm);
 
+#ifndef _WIN32
+// OpenSSL-based certificate verification (not needed on Windows where Schannel handles it)
 static QUIC_STATUS verify_peer_cert_tls(
     QUIC_CERTIFICATE *cert, QUIC_CERTIFICATE *chain, char *cacert);
 
@@ -206,6 +212,7 @@ verify_peer_cert_tls(QUIC_CERTIFICATE* cert, QUIC_CERTIFICATE* chain, char *cace
 
 	/* @TODO validate SNI */
 }
+#endif // _WIN32
 
 // Helper function to load a client configuration.
 static BOOLEAN
@@ -711,19 +718,15 @@ quic_connection_cb(_In_ HQUIC Connection, _In_opt_ void *Context,
 		break;
 	case QUIC_CONNECTION_EVENT_PEER_CERTIFICATE_RECEIVED:
 		log_info("QUIC_CONNECTION_EVENT_PEER_CERTIFICATE_RECEIVED");
-
-		// TODO Using mbedtls APIs to verify
-		/*
-		 * TODO
-		 * Does MsQuic ensure the connected event will happen after
-		 * peer_certificate_received event.?
-		 */
+#ifndef _WIN32
+		// OpenSSL-based certificate verification (on Windows, Schannel handles this)
 		if (QUIC_FAILED(rv = verify_peer_cert_tls(
 				Event->PEER_CERTIFICATE_RECEIVED.Certificate,
 				Event->PEER_CERTIFICATE_RECEIVED.Chain, qsock->cacert))) {
 			log_error("[conn][%p] Invalid certificate file received from the peer");
 			return rv;
 		}
+#endif
 		break;
 	case QUIC_CONNECTION_EVENT_DATAGRAM_STATE_CHANGED:
 		log_info("QUIC_CONNECTION_EVENT_DATAGRAM_STATE_CHANGED");
